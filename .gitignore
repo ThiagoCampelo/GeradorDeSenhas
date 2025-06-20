@@ -1,0 +1,5 @@
+.git/
+__history/
+__recovery/
+Win32/
+# Ignore all files in the Win32 directory
