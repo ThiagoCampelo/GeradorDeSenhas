@@ -1,0 +1,245 @@
+unit Main;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, AdvPanel,
+  Vcl.ExtCtrls, ToolPanels, Vcl.StdCtrls, AdvLabel, AdvGrid, AsgLinks, AdvEdit,
+  AdvEdBtn, Vcl.Mask, RzEdit, RzPanel, RzRadGrp, RzButton, RzRadChk, AeroButtons,
+  RzLabel, RzCmboBx, System.Hash, IdHashMessageDigest, Vcl.Clipbrd, Vcl.ComCtrls,
+  System.Math;
+
+type
+  TPrincipal = class(TForm)
+    AdvPanel1: TAdvPanel;
+    AdvPanel2: TAdvPanel;
+    AdvLabel1: TAdvLabel;
+    lblTamSenha: TAdvLabel;
+    cbMaius: TRzCheckBox;
+    RzPanel1: TRzPanel;
+    cbMinus: TRzCheckBox;
+    cbNums: TRzCheckBox;
+    cbEspecis: TRzCheckBox;
+    btnGerar: TAeroButton;
+    cbHashQuest: TRzCheckBox;
+    pnlHash: TRzPanel;
+    RzLabel1: TRzLabel;
+    edtSemente: TRzEdit;
+    cbTamanhoSenha: TRzComboBox;
+    edtSenha: TRzEdit;
+    RzLabel2: TRzLabel;
+    AdvLabel3: TAdvLabel;
+    memSenhaGerada: TMemo;
+    procedure FormShow(Sender: TObject);
+    procedure cbHashQuestClick(Sender: TObject);
+    procedure btnGerarClick(Sender: TObject);
+    procedure edtSementeKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+  private
+    function HashMd5(const Valor, Semente: string): string;
+    function SenhaHasheada: string;
+    function GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
+    procedure SenhaAleatoria;
+  public
+    { Public declarations }
+  end;
+
+var
+  Principal: TPrincipal;
+
+implementation
+
+{$R *.dfm}
+
+function TPrincipal.HashMD5(const Valor, Semente: string): string;
+var
+  MD5: TIdHashMessageDigest5;
+begin
+  MD5 := TIdHashMessageDigest5.Create;
+  try
+    Result := MD5.HashStringAsHex(Semente + Valor + Semente);
+  finally
+    MD5.Free;
+  end;
+
+end;
+
+function TPrincipal.GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
+const
+  Mauisculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  Minusculas = 'abcdefghijklmnopqrstuvwxyz';
+  Numeros = '0123456789';
+  Especiais = '!@#$%^&*()-+,./?[]{}<>:;';
+var
+  CaracteresDisponiveis: string;
+  Senha: string;
+  i: Integer;
+begin
+  CaracteresDisponiveis := '';
+  Senha := '';
+
+  if AIncluiMaius then
+    CaracteresDisponiveis := CaracteresDisponiveis + Mauisculas;
+  if AIncluiMinus then
+    CaracteresDisponiveis := CaracteresDisponiveis + Minusculas;
+  if AIncluiNums then
+    CaracteresDisponiveis := CaracteresDisponiveis + Numeros;
+  if AIncluiEspecis then
+    CaracteresDisponiveis := CaracteresDisponiveis + Especiais;
+
+  if CaracteresDisponiveis = '' then
+  begin
+    ShowMessage('Por favor, selecione pelo menos um tipo de caractere para a senha.');
+    Result := '';
+    Exit;
+  end;
+
+  if AIncluiMaius and (ALength > 0) then
+    Senha := Senha + Mauisculas[RandomRange(1, Length(Mauisculas))];
+  if AIncluiMinus and (ALength > 1) then
+    Senha := Senha + Minusculas[RandomRange(1, Length(Minusculas))];
+  if AIncluiNums and (ALength > 2) then
+    Senha := Senha + Numeros[RandomRange(1, Length(Numeros))];
+  if AIncluiEspecis and (ALength > 3) then
+    Senha := Senha + Especiais[RandomRange(1, Length(Especiais))];
+
+  for i := Length(Senha) + 1 to ALength do
+    Senha := Senha + CaracteresDisponiveis[RandomRange(1, Length(CaracteresDisponiveis))];
+
+  for i := 1 to ALength * 3 do
+  begin
+    var Index1 := RandomRange(1, Length(Senha));
+    var Index2 := RandomRange(1, Length(Senha));
+    var CharTemp := Senha[Index1];
+    Senha[Index1] := Senha[Index2];
+    Senha[Index2] := CharTemp;
+  end;
+
+  Result := Senha;
+end;
+
+function TPrincipal.SenhaHasheada: string;
+var
+  Senha, Semente, SenhaGerada: string;
+begin
+  Senha := edtSenha.Text;
+  Semente := edtSemente.Text;
+
+  SenhaGerada := HashMd5(Senha, Semente);
+
+  if (Senha = '') or (Semente = '') then
+  begin
+    edtSenha.SetFocus;
+    raise Exception.Create('Por favor, preencha a Senha e a Semente para gerar!');
+  end
+  else
+  begin
+    memSenhaGerada.Text := SenhaGerada;
+    edtSenha.Clear;
+    edtSemente.Clear;
+    memSenhaGerada.ReadOnly := False;
+
+    Clipboard.AsText := SenhaGerada;
+    ShowMessage('A senha foi copiada para a área de transferência!');
+  end;
+end;
+
+procedure TPrincipal.SenhaAleatoria;
+var
+  TamanhoSenha: Integer;
+  SenhaGerada: string;
+begin
+  if cbTamanhoSenha.ItemHeight = -1 then
+  begin
+    ShowMessage('Por favor, selecione um tamanho para a senha.');
+    Exit;
+  end;
+
+  try
+    TamanhoSenha := StrToInt(cbTamanhoSenha.Items[cbTamanhoSenha.ItemIndex]);
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Erro ao obter o tamanho da senha: ' + E.Message);
+      Exit;
+    end;
+  end;
+
+  if TamanhoSenha > 30 then
+  begin
+    ShowMessage('O comprimento máximo da senha permitido é de 30 caracteres.');
+    Exit;
+  end;
+
+  SenhaGerada := GerarSenha(TamanhoSenha, cbMaius.Checked, cbMinus.Checked, cbNums.Checked, cbEspecis.Checked);
+
+  memSenhaGerada.Lines.Add(SenhaGerada);
+  ShowMessage('A senha foi gerada e copiada para a área de transferência!');
+
+  Clipboard.AsText := SenhaGerada;
+end;
+
+procedure TPrincipal.btnGerarClick(Sender: TObject);
+begin
+  if cbHashQuest.Checked then
+  begin
+    SenhaHasheada;
+    Exit;
+  end;
+
+  SenhaAleatoria;
+  memSenhaGerada.SetFocus;
+end;
+
+procedure TPrincipal.cbHashQuestClick(Sender: TObject);
+begin
+  if cbHashQuest.Checked then
+  begin
+    pnlHash.Visible := True;
+    edtSenha.SetFocus;
+    cbNums.Enabled := False;
+    cbMaius.Enabled := False;
+    cbMinus.Enabled := False;
+    cbEspecis.Enabled := False;
+    cbTamanhoSenha.Enabled := False;
+  end
+  else
+  begin
+    pnlHash.Visible := False;
+    btnGerar.SetFocus;
+    cbNums.Enabled := True;
+    cbMaius.Enabled := True;
+    cbMinus.Enabled := True;
+    cbEspecis.Enabled := True;
+    cbTamanhoSenha.Enabled := True;
+  end;
+  memSenhaGerada.Clear;
+end;
+
+procedure TPrincipal.edtSementeKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+  begin
+    Key := 0;
+    btnGerar.Click;
+  end;
+end;
+
+procedure TPrincipal.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = #13 then
+  begin
+    Perform(CM_DIALOGKEY, VK_TAB, 0);
+    Key := #0;
+  end;
+end;
+
+procedure TPrincipal.FormShow(Sender: TObject);
+begin
+  pnlHash.Visible := False;
+//  Principal.Caption := 'Gerador de Senhas [ ' +  + ' ] '
+end;
+
+end.
+
