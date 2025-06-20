@@ -1,5 +1,5 @@
+#Pastas da raiz do projeto
 .git/
-__history/
-__recovery/
+__*
+#Pastas de build
 Win32/
-# Ignore all files in the Win32 directory
