@@ -1,5 +1,47 @@
-#Pastas da raiz do projeto
-.git/
-__*
-#Pastas de build
+# Ignora a pasta de histórico de IDE do Delphi
+__history/
+
+# Ignora a pasta de recuperação do Delphi (se for gerada pelo IDE)
+_recovery/
+
+# Ignora a pasta de compilação Win32
 Win32/
+
+# Ignora qualquer outra pasta de compilação (ex: Win64, Debug, Release)
+Win64/
+Debug/
+Release/
+
+# Ignora arquivos comuns de compilação e backup do Delphi em qualquer lugar
+*.dcu
+*.obj
+*.res
+*.exe
+*.dll
+*.bpl
+*.dcp
+*.lib
+*.tds
+*.map
+*.stat
+*.identcache
+*.dbg
+*.rsm
+*.o
+*.~*
+*.bak
+*.local
+*.dsk
+*.log
+*.do
+*.todo
+*.tvscc
+*.vspscc
+
+# Ignora o .git (a pasta .git em si é o repositório, não deve ser adicionada ao índice)
+# Geralmente não precisa ser listada explicitamente, pois o Git já a ignora.
+# Mas se você tivesse submodulos ou algo complexo, poderia ser relevante.
+# Neste caso, não adicione explicitamente, o Git já sabe que é o próprio repositório.
+
+# Regras para ignorar o conteúdo de 'src' temporariamente, mas vamos reverter isso!
+# Não adicione `src/` aqui se você quer que o conteúdo de `src` vá para o Git!
