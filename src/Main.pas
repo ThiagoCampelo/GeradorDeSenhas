@@ -97,31 +97,35 @@ var
   Senha: string;
   i: Integer;
   TiposSelecionados: Integer;
+  Grupos: array of string;
+  GrupoIndex: Integer;
+
+  function RandomChar(const AChars: string): Char;
+  begin
+    Result := AChars[RandomRange(1, Length(AChars))];
+  end;
+
+  procedure AdicionarGrupo(const AGrupo: string);
+  begin
+    SetLength(Grupos, Length(Grupos) + 1);
+    Grupos[High(Grupos)] := AGrupo;
+    CaracteresDisponiveis := CaracteresDisponiveis + AGrupo;
+    Inc(TiposSelecionados);
+  end;
 begin
   CaracteresDisponiveis := '';
   Senha := '';
   TiposSelecionados := 0;
+  SetLength(Grupos, 0);
 
   if AIncluiMaius then
-  begin
-    CaracteresDisponiveis := CaracteresDisponiveis + Mauisculas;
-    Inc(TiposSelecionados);
-  end;
+    AdicionarGrupo(Mauisculas);
   if AIncluiMinus then
-  begin
-    CaracteresDisponiveis := CaracteresDisponiveis + Minusculas;
-    Inc(TiposSelecionados);
-  end;
+    AdicionarGrupo(Minusculas);
   if AIncluiNums then
-  begin
-    CaracteresDisponiveis := CaracteresDisponiveis + Numeros;
-    Inc(TiposSelecionados);
-  end;
+    AdicionarGrupo(Numeros);
   if AIncluiEspecis then
-  begin
-    CaracteresDisponiveis := CaracteresDisponiveis + Especiais;
-    Inc(TiposSelecionados);
-  end;
+    AdicionarGrupo(Especiais);
 
   if CaracteresDisponiveis = '' then
   begin
@@ -142,17 +146,11 @@ begin
     Exit;
   end;
 
-  if AIncluiMaius and (ALength > 0) then
-    Senha := Senha + Mauisculas[RandomRange(1, Length(Mauisculas))];
-  if AIncluiMinus and (ALength > 1) then
-    Senha := Senha + Minusculas[RandomRange(1, Length(Minusculas))];
-  if AIncluiNums and (ALength > 2) then
-    Senha := Senha + Numeros[RandomRange(1, Length(Numeros))];
-  if AIncluiEspecis and (ALength > 3) then
-    Senha := Senha + Especiais[RandomRange(1, Length(Especiais))];
+  for GrupoIndex := 0 to High(Grupos) do
+    Senha := Senha + RandomChar(Grupos[GrupoIndex]);
 
   for i := Length(Senha) + 1 to ALength do
-    Senha := Senha + CaracteresDisponiveis[RandomRange(1, Length(CaracteresDisponiveis))];
+    Senha := Senha + RandomChar(CaracteresDisponiveis);
 
   EmbaralharSenha(Senha);
 
