@@ -170,7 +170,9 @@ begin
       edtSenha.SetFocus
     else
       edtSemente.SetFocus;
-    raise Exception.Create('Por favor, preencha a Senha e a Semente para gerar!');
+    ShowMessage('Por favor, preencha a Senha e a Semente para gerar!');
+    Result := '';
+    Exit;
   end;
 
   SenhaGerada := HashMd5(Senha, Semente);
