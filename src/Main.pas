@@ -161,12 +161,15 @@ function TPrincipal.SenhaHasheada: string;
 var
   Senha, Semente, SenhaGerada: string;
 begin
-  Senha := edtSenha.Text;
-  Semente := edtSemente.Text;
+  Senha := Trim(edtSenha.Text);
+  Semente := Trim(edtSemente.Text);
 
   if (Senha = '') or (Semente = '') then
   begin
-    edtSenha.SetFocus;
+    if Senha = '' then
+      edtSenha.SetFocus
+    else
+      edtSemente.SetFocus;
     raise Exception.Create('Por favor, preencha a Senha e a Semente para gerar!');
   end;
 
