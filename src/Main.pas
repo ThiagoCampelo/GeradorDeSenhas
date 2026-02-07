@@ -21,11 +21,15 @@ type
     cbMinus: TRzCheckBox;
     cbNums: TRzCheckBox;
     cbEspecis: TRzCheckBox;
+    cbEvitarAmbiguos: TRzCheckBox;
+    cbCopiarAuto: TRzCheckBox;
     btnGerar: TAeroButton;
     cbHashQuest: TRzCheckBox;
     pnlHash: TRzPanel;
     RzLabel1: TRzLabel;
     edtSemente: TRzEdit;
+    lblMaxSenha: TRzLabel;
+    edtMaxSenha: TRzEdit;
     cbTamanhoSenha: TRzComboBox;
     edtSenha: TRzEdit;
     RzLabel2: TRzLabel;
@@ -36,11 +40,18 @@ type
     procedure btnGerarClick(Sender: TObject);
     procedure edtSementeKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure edtMaxSenhaExit(Sender: TObject);
   private
     function HashMd5(const Valor, Semente: string): string;
     function SenhaHasheada: string;
     function GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
     procedure SenhaAleatoria;
+    procedure EmbaralharSenha(var ASenha: string);
+    procedure AtualizarTamanhos(const AMax: Integer);
+    function ObterMaxSenha(out AMax: Integer): Boolean;
+    procedure AtualizarDestaqueTipos(const AInvalido: Boolean);
+    procedure AtualizarLabelTamanho(const AMax: Integer);
+    FCorOriginalOpcoes: TColor;
   public
     { Public declarations }
   end;
@@ -65,56 +76,166 @@ begin
 
 end;
 
+procedure TPrincipal.AtualizarDestaqueTipos(const AInvalido: Boolean);
+begin
+  if AInvalido then
+    RzPanel1.Color := $00C6C6FF
+  else
+    RzPanel1.Color := FCorOriginalOpcoes;
+end;
+
+procedure TPrincipal.AtualizarLabelTamanho(const AMax: Integer);
+begin
+  lblTamSenha.Text :=
+    '{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Arial;}}' + #13#10 +
+    '{\colortbl ;\red255\green0\blue0;}' + #13#10 +
+    '{\*\generator Riched20 10.0.26100}\viewkind4\uc1 ' + #13#10 +
+    '\pard\fs22\lang1046 Tamanho da senha:\fs16\par' + #13#10 +
+    '\cf1\fs12 O tamanho máximo permitido é de ' + IntToStr(AMax) + ' caracteres.\cf0\fs16\par' + #13#10 +
+    '}' + #13#10 + #0;
+end;
+
+procedure TPrincipal.AtualizarTamanhos(const AMax: Integer);
+var
+  i: Integer;
+  ValorAtual: Integer;
+begin
+  ValorAtual := 0;
+  if cbTamanhoSenha.ItemIndex >= 0 then
+    TryStrToInt(cbTamanhoSenha.Items[cbTamanhoSenha.ItemIndex], ValorAtual);
+
+  cbTamanhoSenha.Items.BeginUpdate;
+  try
+    cbTamanhoSenha.Items.Clear;
+    for i := 1 to AMax do
+      cbTamanhoSenha.Items.Add(IntToStr(i));
+  finally
+    cbTamanhoSenha.Items.EndUpdate;
+  end;
+
+  if (ValorAtual >= 1) and (ValorAtual <= AMax) then
+    cbTamanhoSenha.ItemIndex := ValorAtual - 1
+  else
+    cbTamanhoSenha.ItemIndex := 0;
+end;
+
+function TPrincipal.ObterMaxSenha(out AMax: Integer): Boolean;
+begin
+  Result := TryStrToInt(Trim(edtMaxSenha.Text), AMax) and (AMax > 0);
+  if not Result then
+  begin
+    ShowMessage('Informe um tamanho máximo válido para a senha.');
+    edtMaxSenha.SetFocus;
+  end;
+end;
+
+procedure TPrincipal.EmbaralharSenha(var ASenha: string);
+var
+  i: Integer;
+  Index1: Integer;
+  Index2: Integer;
+  CharTemp: Char;
+begin
+  if Length(ASenha) < 2 then
+    Exit;
+
+  for i := 1 to Length(ASenha) * 3 do
+  begin
+    Index1 := RandomRange(1, Length(ASenha));
+    Index2 := RandomRange(1, Length(ASenha));
+    CharTemp := ASenha[Index1];
+    ASenha[Index1] := ASenha[Index2];
+    ASenha[Index2] := CharTemp;
+  end;
+end;
+
 function TPrincipal.GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
 const
   Mauisculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   Minusculas = 'abcdefghijklmnopqrstuvwxyz';
   Numeros = '0123456789';
   Especiais = '!@#$%^&*()-+,./?[]{}<>:;';
+  Ambiguos = 'O0Il1';
 var
   CaracteresDisponiveis: string;
   Senha: string;
   i: Integer;
+  TiposSelecionados: Integer;
+  Grupos: array of string;
+  GrupoIndex: Integer;
+
+  function RandomChar(const AChars: string): Char;
+  begin
+    Result := AChars[RandomRange(1, Length(AChars))];
+  end;
+
+  function FiltrarAmbiguos(const AChars: string): string;
+  var
+    Ch: Char;
+  begin
+    Result := '';
+    for Ch in AChars do
+      if Pos(Ch, Ambiguos) = 0 then
+        Result := Result + Ch;
+  end;
+
+  procedure AdicionarGrupo(const AGrupo: string);
+  var
+    GrupoFiltrado: string;
+  begin
+    GrupoFiltrado := AGrupo;
+    if cbEvitarAmbiguos.Checked then
+      GrupoFiltrado := FiltrarAmbiguos(GrupoFiltrado);
+    if GrupoFiltrado = '' then
+      Exit;
+    SetLength(Grupos, Length(Grupos) + 1);
+    Grupos[High(Grupos)] := GrupoFiltrado;
+    CaracteresDisponiveis := CaracteresDisponiveis + GrupoFiltrado;
+    Inc(TiposSelecionados);
+  end;
 begin
   CaracteresDisponiveis := '';
   Senha := '';
+  TiposSelecionados := 0;
+  SetLength(Grupos, 0);
+  AtualizarDestaqueTipos(False);
 
   if AIncluiMaius then
-    CaracteresDisponiveis := CaracteresDisponiveis + Mauisculas;
+    AdicionarGrupo(Mauisculas);
   if AIncluiMinus then
-    CaracteresDisponiveis := CaracteresDisponiveis + Minusculas;
+    AdicionarGrupo(Minusculas);
   if AIncluiNums then
-    CaracteresDisponiveis := CaracteresDisponiveis + Numeros;
+    AdicionarGrupo(Numeros);
   if AIncluiEspecis then
-    CaracteresDisponiveis := CaracteresDisponiveis + Especiais;
+    AdicionarGrupo(Especiais);
 
   if CaracteresDisponiveis = '' then
   begin
-    ShowMessage('Por favor, selecione pelo menos um tipo de caractere para a senha.');
+    ShowMessage('Nenhum caractere disponível com as opções selecionadas.');
+    Result := '';
+    Exit;
+  end;
+  if ALength < 1 then
+  begin
+    ShowMessage('Por favor, selecione um tamanho de senha válido.');
+    Result := '';
+    Exit;
+  end;
+  if ALength < TiposSelecionados then
+  begin
+    AtualizarDestaqueTipos(True);
+    ShowMessage('O tamanho da senha precisa ser maior ou igual ao número de tipos selecionados.');
     Result := '';
     Exit;
   end;
 
-  if AIncluiMaius and (ALength > 0) then
-    Senha := Senha + Mauisculas[RandomRange(1, Length(Mauisculas))];
-  if AIncluiMinus and (ALength > 1) then
-    Senha := Senha + Minusculas[RandomRange(1, Length(Minusculas))];
-  if AIncluiNums and (ALength > 2) then
-    Senha := Senha + Numeros[RandomRange(1, Length(Numeros))];
-  if AIncluiEspecis and (ALength > 3) then
-    Senha := Senha + Especiais[RandomRange(1, Length(Especiais))];
+  for GrupoIndex := 0 to High(Grupos) do
+    Senha := Senha + RandomChar(Grupos[GrupoIndex]);
 
   for i := Length(Senha) + 1 to ALength do
-    Senha := Senha + CaracteresDisponiveis[RandomRange(1, Length(CaracteresDisponiveis))];
+    Senha := Senha + RandomChar(CaracteresDisponiveis);
 
-  for i := 1 to ALength * 3 do
-  begin
-    var Index1 := RandomRange(1, Length(Senha));
-    var Index2 := RandomRange(1, Length(Senha));
-    var CharTemp := Senha[Index1];
-    Senha[Index1] := Senha[Index2];
-    Senha[Index2] := CharTemp;
-  end;
+  EmbaralharSenha(Senha);
 
   Result := Senha;
 end;
@@ -122,62 +243,80 @@ end;
 function TPrincipal.SenhaHasheada: string;
 var
   Senha, Semente, SenhaGerada: string;
+  Stamp: string;
 begin
-  Senha := edtSenha.Text;
-  Semente := edtSemente.Text;
-
-  SenhaGerada := HashMd5(Senha, Semente);
+  Senha := Trim(edtSenha.Text);
+  Semente := Trim(edtSemente.Text);
 
   if (Senha = '') or (Semente = '') then
   begin
-    edtSenha.SetFocus;
-    raise Exception.Create('Por favor, preencha a Senha e a Semente para gerar!');
+    if Senha = '' then
+      edtSenha.SetFocus
+    else
+      edtSemente.SetFocus;
+    ShowMessage('Por favor, preencha a Senha e a Semente para gerar!');
+    Result := '';
+    Exit;
+  end;
+
+  SenhaGerada := HashMd5(Senha, Semente);
+  Result := SenhaGerada;
+  Stamp := FormatDateTime('yyyy-mm-dd hh:nn:ss', Now);
+  memSenhaGerada.Lines.Add(Format('%s - %s', [Stamp, SenhaGerada]));
+  edtSenha.Clear;
+  edtSemente.Clear;
+  memSenhaGerada.ReadOnly := False;
+
+  if cbCopiarAuto.Checked then
+  begin
+    Clipboard.AsText := SenhaGerada;
+    ShowMessage('A senha foi copiada para a área de transferência!');
   end
   else
-  begin
-    memSenhaGerada.Text := SenhaGerada;
-    edtSenha.Clear;
-    edtSemente.Clear;
-    memSenhaGerada.ReadOnly := False;
-
-    Clipboard.AsText := SenhaGerada;
-    ShowMessage('A senha foi copiada para a �rea de transfer�ncia!');
-  end;
+    ShowMessage('A senha foi gerada com sucesso!');
 end;
 
 procedure TPrincipal.SenhaAleatoria;
 var
   TamanhoSenha: Integer;
   SenhaGerada: string;
+  TamanhoMaximoSenha: Integer;
+  Stamp: string;
 begin
-  if cbTamanhoSenha.ItemHeight = -1 then
+  if not ObterMaxSenha(TamanhoMaximoSenha) then
+    Exit;
+
+  if cbTamanhoSenha.ItemIndex < 0 then
   begin
     ShowMessage('Por favor, selecione um tamanho para a senha.');
     Exit;
   end;
 
-  try
-    TamanhoSenha := StrToInt(cbTamanhoSenha.Items[cbTamanhoSenha.ItemIndex]);
-  except
-    on E: Exception do
-    begin
-      ShowMessage('Erro ao obter o tamanho da senha: ' + E.Message);
-      Exit;
-    end;
+  if not TryStrToInt(cbTamanhoSenha.Items[cbTamanhoSenha.ItemIndex], TamanhoSenha) then
+  begin
+    ShowMessage('Erro ao obter o tamanho da senha selecionada.');
+    Exit;
   end;
 
-  if TamanhoSenha > 30 then
+  if TamanhoSenha > TamanhoMaximoSenha then
   begin
-    ShowMessage('O comprimento m�ximo da senha permitido � de 30 caracteres.');
+    ShowMessage('O comprimento máximo da senha permitido é de ' + IntToStr(TamanhoMaximoSenha) + ' caracteres.');
     Exit;
   end;
 
   SenhaGerada := GerarSenha(TamanhoSenha, cbMaius.Checked, cbMinus.Checked, cbNums.Checked, cbEspecis.Checked);
+  if SenhaGerada = '' then
+    Exit;
 
-  memSenhaGerada.Lines.Add(SenhaGerada);
-  ShowMessage('A senha foi gerada e copiada para a �rea de transfer�ncia!');
-
-  Clipboard.AsText := SenhaGerada;
+  Stamp := FormatDateTime('yyyy-mm-dd hh:nn:ss', Now);
+  memSenhaGerada.Lines.Add(Format('%s - %s', [Stamp, SenhaGerada]));
+  if cbCopiarAuto.Checked then
+  begin
+    Clipboard.AsText := SenhaGerada;
+    ShowMessage('A senha foi gerada e copiada para a área de transferência!');
+  end
+  else
+    ShowMessage('A senha foi gerada com sucesso!');
 end;
 
 procedure TPrincipal.btnGerarClick(Sender: TObject);
@@ -202,7 +341,10 @@ begin
     cbMaius.Enabled := False;
     cbMinus.Enabled := False;
     cbEspecis.Enabled := False;
+    cbEvitarAmbiguos.Enabled := False;
+    cbCopiarAuto.Enabled := False;
     cbTamanhoSenha.Enabled := False;
+    edtMaxSenha.Enabled := False;
   end
   else
   begin
@@ -212,8 +354,12 @@ begin
     cbMaius.Enabled := True;
     cbMinus.Enabled := True;
     cbEspecis.Enabled := True;
+    cbEvitarAmbiguos.Enabled := True;
+    cbCopiarAuto.Enabled := True;
     cbTamanhoSenha.Enabled := True;
+    edtMaxSenha.Enabled := True;
   end;
+  AtualizarDestaqueTipos(False);
   memSenhaGerada.Clear;
 end;
 
@@ -236,10 +382,28 @@ begin
 end;
 
 procedure TPrincipal.FormShow(Sender: TObject);
+const
+  TamanhoMaximoPadrao = 30;
 begin
+  Randomize;
+  FCorOriginalOpcoes := RzPanel1.Color;
+  edtMaxSenha.Text := IntToStr(TamanhoMaximoPadrao);
+  AtualizarTamanhos(TamanhoMaximoPadrao);
+  AtualizarLabelTamanho(TamanhoMaximoPadrao);
+  cbCopiarAuto.Checked := True;
   pnlHash.Visible := False;
 //  Principal.Caption := 'Gerador de Senhas [ ' +  + ' ] '
 end;
 
-end.
+procedure TPrincipal.edtMaxSenhaExit(Sender: TObject);
+var
+  TamanhoMaximoSenha: Integer;
+begin
+  if ObterMaxSenha(TamanhoMaximoSenha) then
+  begin
+    AtualizarTamanhos(TamanhoMaximoSenha);
+    AtualizarLabelTamanho(TamanhoMaximoSenha);
+  end;
+end;
 
+end.
