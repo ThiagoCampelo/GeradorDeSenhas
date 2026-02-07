@@ -41,6 +41,7 @@ type
     function SenhaHasheada: string;
     function GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
     procedure SenhaAleatoria;
+    procedure EmbaralharSenha(var ASenha: string);
   public
     { Public declarations }
   end;
@@ -65,6 +66,26 @@ begin
 
 end;
 
+procedure TPrincipal.EmbaralharSenha(var ASenha: string);
+var
+  i: Integer;
+  Index1: Integer;
+  Index2: Integer;
+  CharTemp: Char;
+begin
+  if Length(ASenha) < 2 then
+    Exit;
+
+  for i := 1 to Length(ASenha) * 3 do
+  begin
+    Index1 := RandomRange(1, Length(ASenha));
+    Index2 := RandomRange(1, Length(ASenha));
+    CharTemp := ASenha[Index1];
+    ASenha[Index1] := ASenha[Index2];
+    ASenha[Index2] := CharTemp;
+  end;
+end;
+
 function TPrincipal.GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
 const
   Mauisculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -75,22 +96,48 @@ var
   CaracteresDisponiveis: string;
   Senha: string;
   i: Integer;
+  TiposSelecionados: Integer;
 begin
   CaracteresDisponiveis := '';
   Senha := '';
+  TiposSelecionados := 0;
 
   if AIncluiMaius then
+  begin
     CaracteresDisponiveis := CaracteresDisponiveis + Mauisculas;
+    Inc(TiposSelecionados);
+  end;
   if AIncluiMinus then
+  begin
     CaracteresDisponiveis := CaracteresDisponiveis + Minusculas;
+    Inc(TiposSelecionados);
+  end;
   if AIncluiNums then
+  begin
     CaracteresDisponiveis := CaracteresDisponiveis + Numeros;
+    Inc(TiposSelecionados);
+  end;
   if AIncluiEspecis then
+  begin
     CaracteresDisponiveis := CaracteresDisponiveis + Especiais;
+    Inc(TiposSelecionados);
+  end;
 
   if CaracteresDisponiveis = '' then
   begin
     ShowMessage('Por favor, selecione pelo menos um tipo de caractere para a senha.');
+    Result := '';
+    Exit;
+  end;
+  if ALength < 1 then
+  begin
+    ShowMessage('Por favor, selecione um tamanho de senha vÃ¡lido.');
+    Result := '';
+    Exit;
+  end;
+  if ALength < TiposSelecionados then
+  begin
+    ShowMessage('O tamanho da senha precisa ser maior ou igual ao nÃºmero de tipos selecionados.');
     Result := '';
     Exit;
   end;
@@ -107,14 +154,7 @@ begin
   for i := Length(Senha) + 1 to ALength do
     Senha := Senha + CaracteresDisponiveis[RandomRange(1, Length(CaracteresDisponiveis))];
 
-  for i := 1 to ALength * 3 do
-  begin
-    var Index1 := RandomRange(1, Length(Senha));
-    var Index2 := RandomRange(1, Length(Senha));
-    var CharTemp := Senha[Index1];
-    Senha[Index1] := Senha[Index2];
-    Senha[Index2] := CharTemp;
-  end;
+  EmbaralharSenha(Senha);
 
   Result := Senha;
 end;
@@ -126,56 +166,54 @@ begin
   Senha := edtSenha.Text;
   Semente := edtSemente.Text;
 
-  SenhaGerada := HashMd5(Senha, Semente);
-
   if (Senha = '') or (Semente = '') then
   begin
     edtSenha.SetFocus;
     raise Exception.Create('Por favor, preencha a Senha e a Semente para gerar!');
-  end
-  else
-  begin
-    memSenhaGerada.Text := SenhaGerada;
-    edtSenha.Clear;
-    edtSemente.Clear;
-    memSenhaGerada.ReadOnly := False;
-
-    Clipboard.AsText := SenhaGerada;
-    ShowMessage('A senha foi copiada para a área de transferência!');
   end;
+
+  SenhaGerada := HashMd5(Senha, Semente);
+  Result := SenhaGerada;
+  memSenhaGerada.Text := SenhaGerada;
+  edtSenha.Clear;
+  edtSemente.Clear;
+  memSenhaGerada.ReadOnly := False;
+
+  Clipboard.AsText := SenhaGerada;
+  ShowMessage('A senha foi copiada para a Ã¡rea de transferÃªncia!');
 end;
 
 procedure TPrincipal.SenhaAleatoria;
+const
+  TamanhoMaximoSenha = 30;
 var
   TamanhoSenha: Integer;
   SenhaGerada: string;
 begin
-  if cbTamanhoSenha.ItemHeight = -1 then
+  if cbTamanhoSenha.ItemIndex < 0 then
   begin
     ShowMessage('Por favor, selecione um tamanho para a senha.');
     Exit;
   end;
 
-  try
-    TamanhoSenha := StrToInt(cbTamanhoSenha.Items[cbTamanhoSenha.ItemIndex]);
-  except
-    on E: Exception do
-    begin
-      ShowMessage('Erro ao obter o tamanho da senha: ' + E.Message);
-      Exit;
-    end;
+  if not TryStrToInt(cbTamanhoSenha.Items[cbTamanhoSenha.ItemIndex], TamanhoSenha) then
+  begin
+    ShowMessage('Erro ao obter o tamanho da senha selecionada.');
+    Exit;
   end;
 
-  if TamanhoSenha > 30 then
+  if TamanhoSenha > TamanhoMaximoSenha then
   begin
-    ShowMessage('O comprimento máximo da senha permitido é de 30 caracteres.');
+    ShowMessage('O comprimento mÃ¡ximo da senha permitido Ã© de 30 caracteres.');
     Exit;
   end;
 
   SenhaGerada := GerarSenha(TamanhoSenha, cbMaius.Checked, cbMinus.Checked, cbNums.Checked, cbEspecis.Checked);
+  if SenhaGerada = '' then
+    Exit;
 
   memSenhaGerada.Lines.Add(SenhaGerada);
-  ShowMessage('A senha foi gerada e copiada para a área de transferência!');
+  ShowMessage('A senha foi gerada e copiada para a Ã¡rea de transferÃªncia!');
 
   Clipboard.AsText := SenhaGerada;
 end;
@@ -237,9 +275,9 @@ end;
 
 procedure TPrincipal.FormShow(Sender: TObject);
 begin
+  Randomize;
   pnlHash.Visible := False;
 //  Principal.Caption := 'Gerador de Senhas [ ' +  + ' ] '
 end;
 
 end.
-
