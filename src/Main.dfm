@@ -139,7 +139,7 @@ object Principal: TPrincipal
       Left = 240
       Top = 112
       Width = 433
-      Height = 97
+      Height = 130
       BorderOuter = fsFlat
       TabOrder = 2
       object cbMaius: TRzCheckBox
@@ -205,6 +205,65 @@ object Principal: TPrincipal
         ParentFont = False
         State = cbUnchecked
         TabOrder = 3
+      end
+      object cbEvitarAmbiguos: TRzCheckBox
+        Left = 18
+        Top = 74
+        Width = 179
+        Height = 19
+        AutoSizeWidth = 179
+        Caption = 'Evitar Caracteres Amb'#237'guos'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 4
+      end
+      object cbCopiarAuto: TRzCheckBox
+        Left = 205
+        Top = 74
+        Width = 164
+        Height = 19
+        AutoSizeWidth = 164
+        Caption = 'Copiar automaticamente'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 5
+      end
+      object lblMaxSenha: TRzLabel
+        Left = 18
+        Top = 102
+        Width = 100
+        Height = 17
+        Caption = 'Tamanho m'#225'ximo:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+      end
+      object edtMaxSenha: TRzEdit
+        Left = 124
+        Top = 100
+        Width = 60
+        Height = 21
+        Text = ''
+        FocusColor = clMoneyGreen
+        FrameHotTrack = True
+        FrameHotStyle = fsFlat
+        FrameVisible = True
+        FramingPreference = fpCustomFraming
+        TabOrder = 6
+        OnExit = edtMaxSenhaExit
       end
     end
     object btnGerar: TAeroButton
