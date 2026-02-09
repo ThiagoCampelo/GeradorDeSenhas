@@ -14,132 +14,67 @@ object Principal: TPrincipal
   Font.Style = []
   Position = poScreenCenter
   OnKeyPress = FormKeyPress
+  OnClose = FormClose
   OnShow = FormShow
   TextHeight = 15
-  object AdvPanel1: TAdvPanel
+  object AdvPanel1: TPanel
     Left = 0
     Top = 0
     Width = 694
     Height = 373
     Align = alClient
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = 4474440
-    Font.Height = -11
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
+    BevelOuter = bvNone
     TabOrder = 0
-    UseDockManager = True
-    Version = '2.7.0.2'
-    BorderColor = clBlack
-    Caption.Color = clWhite
-    Caption.ColorTo = clNone
-    Caption.Font.Charset = DEFAULT_CHARSET
-    Caption.Font.Color = clNone
-    Caption.Font.Height = -11
-    Caption.Font.Name = 'Segoe UI'
-    Caption.Font.Style = []
-    Caption.GradientDirection = gdVertical
-    Caption.Indent = 0
-    Caption.ShadeLight = 255
-    CollapsColor = clNone
-    CollapsDelay = 0
-    DoubleBuffered = True
-    ShadowColor = clBlack
-    ShadowOffset = 0
-    StatusBar.BorderColor = clNone
-    StatusBar.BorderStyle = bsSingle
-    StatusBar.Font.Charset = DEFAULT_CHARSET
-    StatusBar.Font.Color = 4473924
-    StatusBar.Font.Height = -11
-    StatusBar.Font.Name = 'Segoe UI'
-    StatusBar.Font.Style = []
-    StatusBar.Color = clWhite
-    StatusBar.GradientDirection = gdVertical
-    Text = ''
-    FullHeight = 200
-    object lblTamSenha: TAdvLabel
+    object lblTamSenha: TcxLabel
       Left = 10
       Top = 119
-      Width = 159
-      Height = 32
-      Text = 
-        '{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fchar' +
-        'set0 Arial;}}'#13#10'{\colortbl ;\red255\green0\blue0;}'#13#10'{\*\generator' +
-        ' Riched20 10.0.26100}\viewkind4\uc1 '#13#10'\pard\fs22\lang1046 Tamanh' +
-        'o da senha:\fs16\par'#13#10'\cf1\fs12 O tamanho m\'#39'e1ximo permitido \'#39 +
-        'e9 30 caracteres.\cf0\fs16\par'#13#10'}'#13#10#0
-      WordWrap = False
-      Version = '1.0.0.4'
+      Width = 210
+      Height = 40
+      AutoSize = False
+      Caption = 'Tamanho da senha:' + #13#10 + 'O tamanho máximo permitido é de 30 caracteres.'
+      Properties.WordWrap = True
+      Style.Font.Charset = DEFAULT_CHARSET
+      Style.Font.Color = clBlack
+      Style.Font.Height = -13
+      Style.Font.Name = 'Segoe UI'
+      Style.Font.Style = []
+      Style.IsFontAssigned = True
     end
-    object AdvPanel2: TAdvPanel
+    object AdvPanel2: TPanel
       Left = 0
       Top = 0
       Width = 694
       Height = 105
       Align = alTop
       Color = clWhite
+      ParentBackground = False
+      BevelOuter = bvNone
       TabOrder = 0
-      UseDockManager = True
-      Version = '2.7.0.2'
-      BorderColor = clBlack
-      Caption.Color = clWhite
-      Caption.ColorTo = clNone
-      Caption.Font.Charset = DEFAULT_CHARSET
-      Caption.Font.Color = clNone
-      Caption.Font.Height = -11
-      Caption.Font.Name = 'Segoe UI'
-      Caption.Font.Style = []
-      Caption.GradientDirection = gdVertical
-      Caption.Indent = 0
-      Caption.ShadeLight = 255
-      CollapsColor = clNone
-      CollapsDelay = 0
-      DoubleBuffered = True
-      ShadowColor = clBlack
-      ShadowOffset = 0
-      StatusBar.BorderColor = clNone
-      StatusBar.BorderStyle = bsSingle
-      StatusBar.Font.Charset = DEFAULT_CHARSET
-      StatusBar.Font.Color = 4473924
-      StatusBar.Font.Height = -11
-      StatusBar.Font.Name = 'Segoe UI'
-      StatusBar.Font.Style = []
-      StatusBar.Color = clWhite
-      StatusBar.GradientDirection = gdVertical
-      Text = ''
-      FullHeight = 200
-      object AdvLabel1: TAdvLabel
+      object AdvLabel1: TcxLabel
         AlignWithMargins = True
         Left = 10
         Top = 0
-        Width = 681
-        Height = 102
+        AutoSize = False
         Margins.Left = 10
         Margins.Top = 0
         Align = alClient
-        Alignment = taCenter
-        Text = 
-          '{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fchar' +
-          'set0 Arial;}}'#13#10'{\*\generator Riched20 10.0.26100}\viewkind4\uc1 ' +
-          #13#10'\pard\b\fs32\lang1046 GERADOR DE SENHAS\par'#13#10'\b0\fs16\par'#13#10'\fs' +
-          '22 Ferramenta para gerar senhas fortes e seguras.\par'#13#10'O gerador' +
-          ' de senhas permite criar uma senha aleat\'#39'f3ria com diversas op\' +
-          #39'e7\'#39'f5es.\par'#13#10'Selecione as op\'#39'e7\'#39'f5es desejadas, clique em "' +
-          'Gerar Senha" e confira a senha gerada abaixo do bot\'#39'e3o.\par'#13#10'}' +
-          #13#10#0
-        WordWrap = False
-        Version = '1.0.0.4'
-        ExplicitLeft = 0
-        ExplicitWidth = 706
-        ExplicitHeight = 65
+        Caption = 'GERADOR DE SENHAS' + #13#10 + 'Ferramenta para gerar senhas fortes e seguras.' + #13#10 +
+          'Selecione as opções desejadas, clique em "Gerar Senha" e confira a senha gerada.'
+        Properties.Alignment.Horz = taCenter
+        Properties.WordWrap = True
+        Style.Font.Charset = DEFAULT_CHARSET
+        Style.Font.Color = clBlack
+        Style.Font.Height = -14
+        Style.Font.Name = 'Segoe UI'
+        Style.Font.Style = [fsBold]
+        Style.IsFontAssigned = True
       end
     end
     object RzPanel1: TRzPanel
       Left = 240
       Top = 112
       Width = 433
-      Height = 130
+      Height = 240
       BorderOuter = fsFlat
       TabOrder = 2
       object cbMaius: TRzCheckBox
@@ -157,6 +92,7 @@ object Principal: TPrincipal
         ParentFont = False
         State = cbUnchecked
         TabOrder = 0
+        OnClick = cbOpcoesClick
       end
       object cbMinus: TRzCheckBox
         Left = 18
@@ -173,6 +109,7 @@ object Principal: TPrincipal
         ParentFont = False
         State = cbUnchecked
         TabOrder = 1
+        OnClick = cbOpcoesClick
       end
       object cbNums: TRzCheckBox
         Left = 205
@@ -189,6 +126,7 @@ object Principal: TPrincipal
         ParentFont = False
         State = cbUnchecked
         TabOrder = 2
+        OnClick = cbOpcoesClick
       end
       object cbEspecis: TRzCheckBox
         Left = 205
@@ -205,6 +143,7 @@ object Principal: TPrincipal
         ParentFont = False
         State = cbUnchecked
         TabOrder = 3
+        OnClick = cbOpcoesClick
       end
       object cbEvitarAmbiguos: TRzCheckBox
         Left = 18
@@ -221,6 +160,7 @@ object Principal: TPrincipal
         ParentFont = False
         State = cbUnchecked
         TabOrder = 4
+        OnClick = cbEvitarAmbiguosClick
       end
       object cbCopiarAuto: TRzCheckBox
         Left = 205
@@ -237,6 +177,24 @@ object Principal: TPrincipal
         ParentFont = False
         State = cbUnchecked
         TabOrder = 5
+        OnClick = cbOpcoesClick
+      end
+      object cbRegistrarHistorico: TRzCheckBox
+        Left = 205
+        Top = 98
+        Width = 150
+        Height = 19
+        AutoSizeWidth = 150
+        Caption = 'Registrar histórico'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 6
+        OnClick = cbOpcoesClick
       end
       object lblMaxSenha: TRzLabel
         Left = 18
@@ -262,13 +220,159 @@ object Principal: TPrincipal
         FrameHotStyle = fsFlat
         FrameVisible = True
         FramingPreference = fpCustomFraming
-        TabOrder = 6
+        TabOrder = 7
         OnExit = edtMaxSenhaExit
+      end
+      object lblAmbiguos: TRzLabel
+        Left = 18
+        Top = 126
+        Width = 164
+        Height = 17
+        Caption = 'Caracteres amb'#237'guos:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+      end
+      object edtAmbiguos: TRzEdit
+        Left = 18
+        Top = 147
+        Width = 155
+        Height = 21
+        Text = ''
+        FocusColor = clMoneyGreen
+        FrameHotTrack = True
+        FrameHotStyle = fsFlat
+        FrameVisible = True
+        FramingPreference = fpCustomFraming
+        TabOrder = 8
+      end
+      object lblQuantidade: TRzLabel
+        Left = 205
+        Top = 126
+        Width = 73
+        Height = 17
+        Caption = 'Quantidade:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+      end
+      object edtQuantidade: TRzEdit
+        Left = 304
+        Top = 124
+        Width = 60
+        Height = 21
+        Text = ''
+        FocusColor = clMoneyGreen
+        FrameHotTrack = True
+        FrameHotStyle = fsFlat
+        FrameVisible = True
+        FramingPreference = fpCustomFraming
+        TabOrder = 9
+      end
+      object lblMinimo: TRzLabel
+        Left = 205
+        Top = 150
+        Width = 105
+        Height = 17
+        Caption = 'Tamanho mínimo:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+      end
+      object edtMinimo: TRzEdit
+        Left = 320
+        Top = 148
+        Width = 60
+        Height = 21
+        Text = ''
+        FocusColor = clMoneyGreen
+        FrameHotTrack = True
+        FrameHotStyle = fsFlat
+        FrameVisible = True
+        FramingPreference = fpCustomFraming
+        TabOrder = 10
+      end
+      object cbReqMaius: TRzCheckBox
+        Left = 18
+        Top = 176
+        Width = 128
+        Height = 19
+        AutoSizeWidth = 128
+        Caption = 'Exigir Maiúsculas'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 11
+        OnClick = cbOpcoesClick
+      end
+      object cbReqMinus: TRzCheckBox
+        Left = 18
+        Top = 198
+        Width = 128
+        Height = 19
+        AutoSizeWidth = 128
+        Caption = 'Exigir Minúsculas'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 12
+        OnClick = cbOpcoesClick
+      end
+      object cbReqNums: TRzCheckBox
+        Left = 205
+        Top = 176
+        Width = 104
+        Height = 19
+        AutoSizeWidth = 104
+        Caption = 'Exigir Números'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 13
+        OnClick = cbOpcoesClick
+      end
+      object cbReqEspecis: TRzCheckBox
+        Left = 205
+        Top = 198
+        Width = 136
+        Height = 19
+        AutoSizeWidth = 136
+        Caption = 'Exigir Especiais'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 14
+        OnClick = cbOpcoesClick
       end
     end
     object btnGerar: TAeroButton
       Left = 253
-      Top = 274
+      Top = 285
       Width = 177
       Height = 41
       Version = '1.0.0.2'
@@ -284,11 +388,11 @@ object Principal: TPrincipal
     end
     object cbHashQuest: TRzCheckBox
       Left = 10
-      Top = 157
+      Top = 152
       Width = 124
       Height = 19
       Cursor = crHandPoint
-      Hint = 'Gerar senha com Hash MD5 e Semente.'
+      Hint = 'Gerar hash da senha com semente e algoritmo selecionado.'
       AutoSizeWidth = 124
       Caption = 'Senha com HASH'
       Font.Charset = DEFAULT_CHARSET
@@ -305,14 +409,14 @@ object Principal: TPrincipal
     end
     object pnlHash: TRzPanel
       Left = 10
-      Top = 179
+      Top = 174
       Width = 214
-      Height = 136
+      Height = 150
       BorderOuter = fsFlat
       TabOrder = 5
       object RzLabel1: TRzLabel
         Left = 18
-        Top = 84
+        Top = 96
         Width = 53
         Height = 17
         Caption = 'Semente:'
@@ -325,7 +429,7 @@ object Principal: TPrincipal
       end
       object RzLabel2: TRzLabel
         Left = 18
-        Top = 36
+        Top = 46
         Width = 38
         Height = 17
         Caption = 'Senha:'
@@ -336,50 +440,94 @@ object Principal: TPrincipal
         Font.Style = []
         ParentFont = False
       end
-      object AdvLabel3: TAdvLabel
+      object AdvLabel3: TcxLabel
         AlignWithMargins = True
         Left = 4
         Top = 4
-        Width = 206
-        Height = 33
+        Height = 36
+        AutoSize = False
         Align = alTop
-        Alignment = taCenter
-        Text = 
-          '{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fchar' +
-          'set0 Arial;}}'#13#10'{\colortbl ;\red255\green0\blue0;}'#13#10'{\*\generator' +
-          ' Riched20 10.0.26100}\viewkind4\uc1 '#13#10'\pard\qc\cf1\fs14\lang1046' +
-          ' Gera uma HASH MD5 da senha digitada:\cf0\fs16\par'#13#10'}'#13#10#0
-        WordWrap = False
-        Version = '1.0.0.4'
-        ExplicitLeft = 24
-        ExplicitTop = -3
-        ExplicitWidth = 135
+        Caption = 'Gera uma hash da senha digitada com semente.'
+        Properties.Alignment.Horz = taCenter
+        Properties.WordWrap = True
+        Style.Font.Charset = DEFAULT_CHARSET
+        Style.Font.Color = clBlack
+        Style.Font.Height = -12
+        Style.Font.Name = 'Segoe UI'
+        Style.Font.Style = []
+        Style.IsFontAssigned = True
       end
       object edtSemente: TRzEdit
         Left = 18
-        Top = 107
+        Top = 118
         Width = 179
         Height = 21
         Text = ''
         FocusColor = clMoneyGreen
+        FrameHotTrack = True
+        FrameHotStyle = fsFlat
+        FrameVisible = True
+        FramingPreference = fpCustomFraming
+        TabOrder = 2
+        OnKeyDown = edtSementeKeyDown
+        OnChange = cbOpcoesClick
+      end
+      object edtSenha: TRzEdit
+        Left = 18
+        Top = 68
+        Width = 179
+        Height = 21
+        Text = ''
+        FocusColor = clMoneyGreen
+        PasswordChar = '*'
         FrameHotTrack = True
         FrameHotStyle = fsFlat
         FrameVisible = True
         FramingPreference = fpCustomFraming
         TabOrder = 1
-        OnKeyDown = edtSementeKeyDown
+        OnChange = cbOpcoesClick
       end
-      object edtSenha: TRzEdit
+      object cbMostrarSenha: TRzCheckBox
         Left = 18
-        Top = 59
-        Width = 179
-        Height = 21
-        Text = ''
-        FocusColor = clMoneyGreen
-        FrameHotTrack = True
-        FrameHotStyle = fsFlat
-        FrameVisible = True
-        FramingPreference = fpCustomFraming
+        Top = 94
+        Width = 120
+        Height = 17
+        AutoSizeWidth = 120
+        Caption = 'Mostrar senha'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        State = cbUnchecked
+        TabOrder = 3
+        OnClick = cbMostrarSenhaClick
+      end
+      object lblHashAlg: TRzLabel
+        Left = 18
+        Top = 28
+        Width = 73
+        Height = 17
+        Caption = 'Algoritmo:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+      end
+      object cbHashAlg: TcxComboBox
+        Left = 96
+        Top = 26
+        Width = 101
+        Height = 23
+        Properties.DropDownListStyle = lsFixedList
+        Properties.Items.Strings = (
+          'MD5'
+          'SHA-1'
+          'SHA-256'
+          'SHA-512')
         TabOrder = 0
       end
     end
@@ -443,5 +591,113 @@ object Principal: TPrincipal
       Align = alBottom
       TabOrder = 6
     end
+    object lblForca: TRzLabel
+      Left = 445
+      Top = 258
+      Width = 86
+      Height = 17
+      Caption = 'For'#231'a: -'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+    end
+    object pbForca: TProgressBar
+      Left = 445
+      Top = 276
+      Width = 228
+      Height = 16
+      TabOrder = 7
+    end
+    object lblForcaDetalhe: TRzLabel
+      Left = 445
+      Top = 296
+      Width = 228
+      Height = 38
+      Caption = ''
+      WordWrap = True
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+    end
+    object btnExportar: TAeroButton
+      Left = 253
+      Top = 308
+      Width = 84
+      Height = 23
+      Caption = 'Exportar'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 8
+      OnClick = btnExportarClick
+    end
+    object btnLimparHistorico: TAeroButton
+      Left = 346
+      Top = 308
+      Width = 124
+      Height = 23
+      Caption = 'Limpar hist'#243'rico'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 9
+      OnClick = btnLimparHistoricoClick
+    end
+    object btnCopiarHistorico: TAeroButton
+      Left = 480
+      Top = 308
+      Width = 110
+      Height = 23
+      Caption = 'Copiar último'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 10
+      OnClick = btnCopiarHistoricoClick
+    end
+    object lblAviso: TcxLabel
+      Left = 10
+      Top = 258
+      Width = 230
+      Height = 60
+      AutoSize = False
+      Caption = ''
+      Properties.WordWrap = True
+      Style.Font.Charset = DEFAULT_CHARSET
+      Style.Font.Color = clRed
+      Style.Font.Height = -11
+      Style.Font.Name = 'Segoe UI'
+      Style.Font.Style = []
+      Style.IsFontAssigned = True
+      Visible = False
+    end
+  end
+  object tmrClipboard: TTimer
+    Enabled = False
+    Interval = 15000
+    OnTimer = tmrClipboardTimer
+    Left = 632
+    Top = 16
+  end
+  object dlgSalvarHistorico: TSaveDialog
+    DefaultExt = 'txt'
+    Filter = 'Texto (*.txt)|*.txt|CSV (*.csv)|*.csv|JSON (*.json)|*.json|Todos os arquivos (*.*)|*.*'
+    Left = 632
+    Top = 56
   end
 end
