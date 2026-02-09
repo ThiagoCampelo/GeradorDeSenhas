@@ -6,10 +6,11 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, System.IniFiles, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
   Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Mask, Vcl.Clipbrd,
-  Vcl.ComCtrls, System.Math, System.Hash, cxControls, cxContainer, cxEdit,
+  Vcl.ComCtrls, System.Math, System.Hash, System.StrUtils, cxControls, cxContainer, cxEdit,
   cxLabel, cxGraphics, cxLookAndFeels, cxLookAndFeelPainters, cxComboBox,
   cxTextEdit, cxPC, RzEdit, RzPanel, RzRadGrp, RzButton, RzRadChk, RzLabel,
   RzCmboBx;
+
 type
   TPrincipal = class(TForm)
     AdvPanel1: TPanel;
@@ -80,6 +81,8 @@ type
     procedure EmbaralharSenha(var ASenha: string);
     procedure AtualizarTamanhos(const AMax: Integer);
     function ObterMaxSenha(out AMax: Integer): Boolean;
+    FCorOriginalOpcoes: TColor;
+    FClipboardSnapshot: string;
     procedure AtualizarDestaqueTipos(const AInvalido: Boolean);
     procedure AtualizarLabelTamanho(const AMax: Integer);
     procedure AtualizarEstadoGerar;
@@ -99,8 +102,6 @@ type
     procedure ExportarHistorico(const AArquivo: string);
     function GerarBytesAleatorios(const ATamanho: Integer; out ABytes: TBytes): Boolean;
     function RandomIndexSeguro(const AMaximo: Integer): Integer;
-    FCorOriginalOpcoes: TColor;
-    FClipboardSnapshot: string;
   public
     { Public declarations }
   end;
@@ -623,8 +624,8 @@ begin
   btnGerar.Enabled := OpcoesSelecionadas;
   if not OpcoesSelecionadas then
   begin
-    AtualizarDestaqueTipos(True)
-    AtualizarAviso('Selecione ao menos um tipo de caractere para gerar a senha.')
+    AtualizarDestaqueTipos(True);
+    AtualizarAviso('Selecione ao menos um tipo de caractere para gerar a senha.');
   end
   else
   begin
@@ -659,11 +660,11 @@ begin
 
   for Ch in ASenha do
   begin
-    if Ch in ['A'..'Z'] then
+    if CharInSet(Ch, ['A'..'Z']) then
       TemMaius := True
-    else if Ch in ['a'..'z'] then
+    else if CharInSet(Ch, ['a'..'z']) then
       TemMinus := True
-    else if Ch in ['0'..'9'] then
+    else if CharInSet(Ch, ['0'..'9']) then
       TemNums := True
     else
       TemEspeciais := True;
