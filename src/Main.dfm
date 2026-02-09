@@ -17,12 +17,13 @@ object Principal: TPrincipal
   OnClose = FormClose
   OnShow = FormShow
   TextHeight = 15
-  object AdvPanel1: TcxPanel
+  object AdvPanel1: TPanel
     Left = 0
     Top = 0
     Width = 694
     Height = 373
     Align = alClient
+    BevelOuter = bvNone
     TabOrder = 0
     object lblTamSenha: TcxLabel
       Left = 10
@@ -39,13 +40,15 @@ object Principal: TPrincipal
       Style.Font.Style = []
       Style.IsFontAssigned = True
     end
-    object AdvPanel2: TcxPanel
+    object AdvPanel2: TPanel
       Left = 0
       Top = 0
       Width = 694
       Height = 105
       Align = alTop
-      Style.Color = clWhite
+      Color = clWhite
+      ParentBackground = False
+      BevelOuter = bvNone
       TabOrder = 0
       object AdvLabel1: TcxLabel
         AlignWithMargins = True

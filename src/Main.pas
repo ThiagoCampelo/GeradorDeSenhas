@@ -13,8 +13,8 @@ uses
 
 type
   TPrincipal = class(TForm)
-    AdvPanel1: TcxPanel;
-    AdvPanel2: TcxPanel;
+    AdvPanel1: TPanel;
+    AdvPanel2: TPanel;
     AdvLabel1: TcxLabel;
     lblTamSenha: TcxLabel;
     cbMaius: TRzCheckBox;
