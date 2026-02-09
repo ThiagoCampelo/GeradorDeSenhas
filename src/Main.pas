@@ -10,7 +10,6 @@ uses
   cxLabel, cxGraphics, cxLookAndFeels, cxLookAndFeelPainters, cxComboBox,
   cxTextEdit, cxPC, RzEdit, RzPanel, RzRadGrp, RzButton, RzRadChk, RzLabel,
   RzCmboBx;
-
 type
   TPrincipal = class(TForm)
     AdvPanel1: TPanel;
