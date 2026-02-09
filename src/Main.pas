@@ -8,9 +8,8 @@ uses
   Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Mask, Vcl.Clipbrd,
   Vcl.ComCtrls, System.Math, System.Hash, cxControls, cxContainer, cxEdit,
   cxLabel, cxGraphics, cxLookAndFeels, cxLookAndFeelPainters, cxComboBox,
-  cxTextEdit, cxPC, RzEdit, RzPanel, RzRadGrp, RzButton, RzRadChk, AeroButtons,
-  RzLabel, RzCmboBx;
-
+  cxTextEdit, cxPC, RzEdit, RzPanel, RzRadGrp, RzButton, RzRadChk, RzLabel,
+  RzCmboBx;
 type
   TPrincipal = class(TForm)
     AdvPanel1: TPanel;
@@ -26,10 +25,10 @@ type
     cbCopiarAuto: TRzCheckBox;
     cbRegistrarHistorico: TRzCheckBox;
     cbMostrarSenha: TRzCheckBox;
-    btnGerar: TAeroButton;
-    btnExportar: TAeroButton;
-    btnLimparHistorico: TAeroButton;
-    btnCopiarHistorico: TAeroButton;
+    btnGerar: TButton;
+    btnExportar: TButton;
+    btnLimparHistorico: TButton;
+    btnCopiarHistorico: TButton;
     cbHashQuest: TRzCheckBox;
     pnlHash: TRzPanel;
     RzLabel1: TRzLabel;

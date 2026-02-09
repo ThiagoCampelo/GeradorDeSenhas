@@ -370,12 +370,11 @@ object Principal: TPrincipal
         OnClick = cbOpcoesClick
       end
     end
-    object btnGerar: TAeroButton
+    object btnGerar: TButton
       Left = 253
       Top = 285
       Width = 177
       Height = 41
-      Version = '1.0.0.2'
       Caption = 'Gerar Senha'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -625,7 +624,7 @@ object Principal: TPrincipal
       Font.Style = []
       ParentFont = False
     end
-    object btnExportar: TAeroButton
+    object btnExportar: TButton
       Left = 253
       Top = 308
       Width = 84
@@ -640,7 +639,7 @@ object Principal: TPrincipal
       TabOrder = 8
       OnClick = btnExportarClick
     end
-    object btnLimparHistorico: TAeroButton
+    object btnLimparHistorico: TButton
       Left = 346
       Top = 308
       Width = 124
@@ -655,7 +654,7 @@ object Principal: TPrincipal
       TabOrder = 9
       OnClick = btnLimparHistoricoClick
     end
-    object btnCopiarHistorico: TAeroButton
+    object btnCopiarHistorico: TButton
       Left = 480
       Top = 308
       Width = 110
