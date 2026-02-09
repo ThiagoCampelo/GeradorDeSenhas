@@ -4,18 +4,19 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, AdvPanel,
-  Vcl.ExtCtrls, ToolPanels, Vcl.StdCtrls, AdvLabel, AdvGrid, AsgLinks, AdvEdit,
-  AdvEdBtn, Vcl.Mask, RzEdit, RzPanel, RzRadGrp, RzButton, RzRadChk, AeroButtons,
-  RzLabel, RzCmboBx, System.Hash, IdHashMessageDigest, Vcl.Clipbrd, Vcl.ComCtrls,
-  System.Math;
+  System.Classes, System.IniFiles, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
+  Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Mask, Vcl.Clipbrd,
+  Vcl.ComCtrls, System.Math, System.Hash, System.StrUtils, cxControls, cxContainer, cxEdit,
+  cxLabel, cxGraphics, cxLookAndFeels, cxLookAndFeelPainters, cxComboBox,
+  cxTextEdit, cxPC, RzEdit, RzPanel, RzRadGrp, RzButton, RzRadChk, RzLabel,
+  RzCmboBx;
 
 type
   TPrincipal = class(TForm)
-    AdvPanel1: TAdvPanel;
-    AdvPanel2: TAdvPanel;
-    AdvLabel1: TAdvLabel;
-    lblTamSenha: TAdvLabel;
+    AdvPanel1: TPanel;
+    AdvPanel2: TPanel;
+    AdvLabel1: TcxLabel;
+    lblTamSenha: TcxLabel;
     cbMaius: TRzCheckBox;
     RzPanel1: TRzPanel;
     cbMinus: TRzCheckBox;
@@ -23,7 +24,12 @@ type
     cbEspecis: TRzCheckBox;
     cbEvitarAmbiguos: TRzCheckBox;
     cbCopiarAuto: TRzCheckBox;
-    btnGerar: TAeroButton;
+    cbRegistrarHistorico: TRzCheckBox;
+    cbMostrarSenha: TRzCheckBox;
+    btnGerar: TButton;
+    btnExportar: TButton;
+    btnLimparHistorico: TButton;
+    btnCopiarHistorico: TButton;
     cbHashQuest: TRzCheckBox;
     pnlHash: TRzPanel;
     RzLabel1: TRzLabel;
@@ -31,27 +37,71 @@ type
     lblMaxSenha: TRzLabel;
     edtMaxSenha: TRzEdit;
     cbTamanhoSenha: TRzComboBox;
+    lblQuantidade: TRzLabel;
+    edtQuantidade: TRzEdit;
+    lblMinimo: TRzLabel;
+    edtMinimo: TRzEdit;
+    cbReqMaius: TRzCheckBox;
+    cbReqMinus: TRzCheckBox;
+    cbReqNums: TRzCheckBox;
+    cbReqEspecis: TRzCheckBox;
     edtSenha: TRzEdit;
     RzLabel2: TRzLabel;
-    AdvLabel3: TAdvLabel;
+    AdvLabel3: TcxLabel;
     memSenhaGerada: TMemo;
+    lblForca: TRzLabel;
+    pbForca: TProgressBar;
+    lblForcaDetalhe: TRzLabel;
+    edtAmbiguos: TRzEdit;
+    lblAmbiguos: TRzLabel;
+    lblHashAlg: TRzLabel;
+    cbHashAlg: TcxComboBox;
+    lblAviso: TcxLabel;
+    tmrClipboard: TTimer;
+    dlgSalvarHistorico: TSaveDialog;
     procedure FormShow(Sender: TObject);
     procedure cbHashQuestClick(Sender: TObject);
     procedure btnGerarClick(Sender: TObject);
     procedure edtSementeKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure edtMaxSenhaExit(Sender: TObject);
+    procedure btnLimparHistoricoClick(Sender: TObject);
+    procedure btnExportarClick(Sender: TObject);
+    procedure cbOpcoesClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure tmrClipboardTimer(Sender: TObject);
+    procedure cbEvitarAmbiguosClick(Sender: TObject);
+    procedure cbMostrarSenhaClick(Sender: TObject);
+    procedure btnCopiarHistoricoClick(Sender: TObject);
   private
-    function HashMd5(const Valor, Semente: string): string;
+    function HashSenha(const Valor, Semente: string): string;
     function SenhaHasheada: string;
     function GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
     procedure SenhaAleatoria;
     procedure EmbaralharSenha(var ASenha: string);
     procedure AtualizarTamanhos(const AMax: Integer);
     function ObterMaxSenha(out AMax: Integer): Boolean;
+    FCorOriginalOpcoes: TColor;
+    FClipboardSnapshot: string;
     procedure AtualizarDestaqueTipos(const AInvalido: Boolean);
     procedure AtualizarLabelTamanho(const AMax: Integer);
-    FCorOriginalOpcoes: TColor;
+    procedure AtualizarEstadoGerar;
+    procedure AtualizarForcaSenha(const ASenha: string);
+    procedure RegistrarHistorico(const ASenha: string);
+    procedure CopiarSenha(const ASenha: string; const AExibirMensagem: Boolean = True);
+    procedure CarregarPreferencias;
+    procedure SalvarPreferencias;
+    function ObterAmbiguos: string;
+    function ObterNomeArquivoConfig: string;
+    procedure AtualizarAmbiguosEstado;
+    procedure AtualizarAvisoHash;
+    function ObterQuantidade(out AQuantidade: Integer): Boolean;
+    function ObterMinimo(out AMinimo: Integer): Boolean;
+    procedure AtualizarAviso(const AMensagem: string);
+    function ExtrairSenhaLinha(const ALinha: string): string;
+    procedure ExportarHistorico(const AArquivo: string);
+    function GerarBytesAleatorios(const ATamanho: Integer; out ABytes: TBytes): Boolean;
+    function RandomIndexSeguro(const AMaximo: Integer): Integer;
   public
     { Public declarations }
   end;
@@ -63,17 +113,63 @@ implementation
 
 {$R *.dfm}
 
-function TPrincipal.HashMD5(const Valor, Semente: string): string;
+function TPrincipal.HashSenha(const Valor, Semente: string): string;
 var
-  MD5: TIdHashMessageDigest5;
+  ValorComSemente: string;
 begin
-  MD5 := TIdHashMessageDigest5.Create;
-  try
-    Result := MD5.HashStringAsHex(Semente + Valor + Semente);
-  finally
-    MD5.Free;
+  ValorComSemente := Semente + Valor + Semente;
+  case cbHashAlg.ItemIndex of
+    0: Result := THashMD5.GetHashString(ValorComSemente);
+    1: Result := THashSHA1.GetHashString(ValorComSemente);
+    2: Result := THashSHA2.GetHashString(ValorComSemente, SHA256);
+    3: Result := THashSHA2.GetHashString(ValorComSemente, SHA512);
+  else
+    Result := THashMD5.GetHashString(ValorComSemente);
   end;
+end;
 
+function TPrincipal.GerarBytesAleatorios(const ATamanho: Integer; out ABytes: TBytes): Boolean;
+const
+  BCRYPT_USE_SYSTEM_PREFERRED_RNG = $00000002;
+type
+  NTSTATUS = LongInt;
+  TBCryptGenRandom = function(hAlgorithm: Pointer; pbBuffer: PByte; cbBuffer: Cardinal; dwFlags: Cardinal): NTSTATUS; stdcall;
+var
+  BCryptGenRandomFunc: TBCryptGenRandom;
+  LibHandle: HMODULE;
+begin
+  Result := False;
+  SetLength(ABytes, ATamanho);
+  if ATamanho <= 0 then
+    Exit;
+
+  LibHandle := LoadLibrary('bcrypt.dll');
+  if LibHandle = 0 then
+    Exit;
+  try
+    @BCryptGenRandomFunc := GetProcAddress(LibHandle, 'BCryptGenRandom');
+    if Assigned(BCryptGenRandomFunc) then
+      Result := BCryptGenRandomFunc(nil, @ABytes[0], ATamanho, BCRYPT_USE_SYSTEM_PREFERRED_RNG) = 0;
+  finally
+    FreeLibrary(LibHandle);
+  end;
+end;
+
+function TPrincipal.RandomIndexSeguro(const AMaximo: Integer): Integer;
+var
+  Bytes: TBytes;
+  Valor: Cardinal;
+begin
+  if AMaximo <= 1 then
+    Exit(0);
+
+  if GerarBytesAleatorios(SizeOf(Valor), Bytes) then
+  begin
+    Move(Bytes[0], Valor, SizeOf(Valor));
+    Result := Integer(Valor mod Cardinal(AMaximo));
+  end
+  else
+    Result := Random(AMaximo);
 end;
 
 procedure TPrincipal.AtualizarDestaqueTipos(const AInvalido: Boolean);
@@ -86,13 +182,7 @@ end;
 
 procedure TPrincipal.AtualizarLabelTamanho(const AMax: Integer);
 begin
-  lblTamSenha.Text :=
-    '{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Arial;}}' + #13#10 +
-    '{\colortbl ;\red255\green0\blue0;}' + #13#10 +
-    '{\*\generator Riched20 10.0.26100}\viewkind4\uc1 ' + #13#10 +
-    '\pard\fs22\lang1046 Tamanho da senha:\fs16\par' + #13#10 +
-    '\cf1\fs12 O tamanho máximo permitido é de ' + IntToStr(AMax) + ' caracteres.\cf0\fs16\par' + #13#10 +
-    '}' + #13#10 + #0;
+  lblTamSenha.Caption := Format('Tamanho da senha:'#13#10'O tamanho máximo permitido é de %d caracteres.', [AMax]);
 end;
 
 procedure TPrincipal.AtualizarTamanhos(const AMax: Integer);
@@ -129,6 +219,26 @@ begin
   end;
 end;
 
+function TPrincipal.ObterQuantidade(out AQuantidade: Integer): Boolean;
+begin
+  Result := TryStrToInt(Trim(edtQuantidade.Text), AQuantidade) and (AQuantidade > 0) and (AQuantidade <= 100);
+  if not Result then
+  begin
+    ShowMessage('Informe uma quantidade válida (1 a 100).');
+    edtQuantidade.SetFocus;
+  end;
+end;
+
+function TPrincipal.ObterMinimo(out AMinimo: Integer): Boolean;
+begin
+  Result := TryStrToInt(Trim(edtMinimo.Text), AMinimo) and (AMinimo >= 1);
+  if not Result then
+  begin
+    ShowMessage('Informe um tamanho mínimo válido.');
+    edtMinimo.SetFocus;
+  end;
+end;
+
 procedure TPrincipal.EmbaralharSenha(var ASenha: string);
 var
   i: Integer;
@@ -141,12 +251,19 @@ begin
 
   for i := 1 to Length(ASenha) * 3 do
   begin
-    Index1 := RandomRange(1, Length(ASenha));
-    Index2 := RandomRange(1, Length(ASenha));
+    Index1 := RandomIndexSeguro(Length(ASenha)) + 1;
+    Index2 := RandomIndexSeguro(Length(ASenha)) + 1;
     CharTemp := ASenha[Index1];
     ASenha[Index1] := ASenha[Index2];
     ASenha[Index2] := CharTemp;
   end;
+end;
+
+function TPrincipal.ObterAmbiguos: string;
+begin
+  Result := Trim(edtAmbiguos.Text);
+  if Result = '' then
+    Result := 'O0Il1S5B8G6';
 end;
 
 function TPrincipal.GerarSenha(const ALength: Integer; const AIncluiMaius: Boolean; const AIncluiMinus: Boolean; const AIncluiNums: Boolean; const AIncluiEspecis: Boolean): string;
@@ -155,7 +272,6 @@ const
   Minusculas = 'abcdefghijklmnopqrstuvwxyz';
   Numeros = '0123456789';
   Especiais = '!@#$%^&*()-+,./?[]{}<>:;';
-  Ambiguos = 'O0Il1';
 var
   CaracteresDisponiveis: string;
   Senha: string;
@@ -163,10 +279,11 @@ var
   TiposSelecionados: Integer;
   Grupos: array of string;
   GrupoIndex: Integer;
+  Ambiguos: string;
 
   function RandomChar(const AChars: string): Char;
   begin
-    Result := AChars[RandomRange(1, Length(AChars))];
+    Result := AChars[RandomIndexSeguro(Length(AChars)) + 1];
   end;
 
   function FiltrarAmbiguos(const AChars: string): string;
@@ -198,6 +315,7 @@ begin
   Senha := '';
   TiposSelecionados := 0;
   SetLength(Grupos, 0);
+  Ambiguos := ObterAmbiguos;
   AtualizarDestaqueTipos(False);
 
   if AIncluiMaius then
@@ -243,7 +361,6 @@ end;
 function TPrincipal.SenhaHasheada: string;
 var
   Senha, Semente, SenhaGerada: string;
-  Stamp: string;
 begin
   Senha := Trim(edtSenha.Text);
   Semente := Trim(edtSemente.Text);
@@ -259,21 +376,15 @@ begin
     Exit;
   end;
 
-  SenhaGerada := HashMd5(Senha, Semente);
+  SenhaGerada := HashSenha(Senha, Semente);
   Result := SenhaGerada;
-  Stamp := FormatDateTime('yyyy-mm-dd hh:nn:ss', Now);
-  memSenhaGerada.Lines.Add(Format('%s - %s', [Stamp, SenhaGerada]));
+  RegistrarHistorico(SenhaGerada);
   edtSenha.Clear;
   edtSemente.Clear;
   memSenhaGerada.ReadOnly := False;
 
-  if cbCopiarAuto.Checked then
-  begin
-    Clipboard.AsText := SenhaGerada;
-    ShowMessage('A senha foi copiada para a área de transferência!');
-  end
-  else
-    ShowMessage('A senha foi gerada com sucesso!');
+  CopiarSenha(SenhaGerada);
+  AtualizarForcaSenha('');
 end;
 
 procedure TPrincipal.SenhaAleatoria;
@@ -281,7 +392,9 @@ var
   TamanhoSenha: Integer;
   SenhaGerada: string;
   TamanhoMaximoSenha: Integer;
-  Stamp: string;
+  Quantidade: Integer;
+  Minimo: Integer;
+  i: Integer;
 begin
   if not ObterMaxSenha(TamanhoMaximoSenha) then
     Exit;
@@ -304,19 +417,50 @@ begin
     Exit;
   end;
 
-  SenhaGerada := GerarSenha(TamanhoSenha, cbMaius.Checked, cbMinus.Checked, cbNums.Checked, cbEspecis.Checked);
-  if SenhaGerada = '' then
+  if not ObterQuantidade(Quantidade) then
     Exit;
 
-  Stamp := FormatDateTime('yyyy-mm-dd hh:nn:ss', Now);
-  memSenhaGerada.Lines.Add(Format('%s - %s', [Stamp, SenhaGerada]));
-  if cbCopiarAuto.Checked then
+  if not ObterMinimo(Minimo) then
+    Exit;
+
+  if TamanhoSenha < Minimo then
   begin
-    Clipboard.AsText := SenhaGerada;
-    ShowMessage('A senha foi gerada e copiada para a área de transferência!');
-  end
-  else
-    ShowMessage('A senha foi gerada com sucesso!');
+    ShowMessage('O tamanho selecionado deve ser maior ou igual ao mínimo informado.');
+    Exit;
+  end;
+
+  if cbReqMaius.Checked and not cbMaius.Checked then
+  begin
+    ShowMessage('Para exigir letras maiúsculas, a opção "Incluir Letras Maiúsculas" precisa estar marcada.');
+    Exit;
+  end;
+  if cbReqMinus.Checked and not cbMinus.Checked then
+  begin
+    ShowMessage('Para exigir letras minúsculas, a opção "Incluir Letras Minúsculas" precisa estar marcada.');
+    Exit;
+  end;
+  if cbReqNums.Checked and not cbNums.Checked then
+  begin
+    ShowMessage('Para exigir números, a opção "Incluir Números" precisa estar marcada.');
+    Exit;
+  end;
+  if cbReqEspecis.Checked and not cbEspecis.Checked then
+  begin
+    ShowMessage('Para exigir especiais, a opção "Incluir Caracteres Especiais" precisa estar marcada.');
+    Exit;
+  end;
+
+  SenhaGerada := '';
+  for i := 1 to Quantidade do
+  begin
+    SenhaGerada := GerarSenha(TamanhoSenha, cbMaius.Checked, cbMinus.Checked, cbNums.Checked, cbEspecis.Checked);
+    if SenhaGerada = '' then
+      Exit;
+    RegistrarHistorico(SenhaGerada);
+  end;
+
+  CopiarSenha(SenhaGerada, Quantidade = 1);
+  AtualizarForcaSenha(SenhaGerada);
 end;
 
 procedure TPrincipal.btnGerarClick(Sender: TObject);
@@ -343,8 +487,16 @@ begin
     cbEspecis.Enabled := False;
     cbEvitarAmbiguos.Enabled := False;
     cbCopiarAuto.Enabled := False;
+    cbRegistrarHistorico.Enabled := False;
     cbTamanhoSenha.Enabled := False;
     edtMaxSenha.Enabled := False;
+    edtQuantidade.Enabled := False;
+    edtMinimo.Enabled := False;
+    cbReqMaius.Enabled := False;
+    cbReqMinus.Enabled := False;
+    cbReqNums.Enabled := False;
+    cbReqEspecis.Enabled := False;
+    AtualizarAvisoHash;
   end
   else
   begin
@@ -356,11 +508,19 @@ begin
     cbEspecis.Enabled := True;
     cbEvitarAmbiguos.Enabled := True;
     cbCopiarAuto.Enabled := True;
+    cbRegistrarHistorico.Enabled := True;
     cbTamanhoSenha.Enabled := True;
     edtMaxSenha.Enabled := True;
+    edtQuantidade.Enabled := True;
+    edtMinimo.Enabled := True;
+    cbReqMaius.Enabled := True;
+    cbReqMinus.Enabled := True;
+    cbReqNums.Enabled := True;
+    cbReqEspecis.Enabled := True;
   end;
   AtualizarDestaqueTipos(False);
-  memSenhaGerada.Clear;
+  AtualizarAmbiguosEstado;
+  AtualizarEstadoGerar;
 end;
 
 procedure TPrincipal.edtSementeKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -391,8 +551,21 @@ begin
   AtualizarTamanhos(TamanhoMaximoPadrao);
   AtualizarLabelTamanho(TamanhoMaximoPadrao);
   cbCopiarAuto.Checked := True;
+  cbRegistrarHistorico.Checked := True;
   pnlHash.Visible := False;
-//  Principal.Caption := 'Gerador de Senhas [ ' +  + ' ] '
+  pbForca.Min := 0;
+  pbForca.Max := 100;
+  pbForca.Position := 0;
+  lblForca.Caption := 'Força: -';
+  lblForcaDetalhe.Caption := '';
+  cbHashAlg.ItemIndex := 0;
+  edtAmbiguos.Text := 'O0Il1S5B8G6';
+  edtQuantidade.Text := '1';
+  edtMinimo.Text := '8';
+  edtSenha.PasswordChar := '*';
+  CarregarPreferencias;
+  AtualizarAmbiguosEstado;
+  AtualizarEstadoGerar;
 end;
 
 procedure TPrincipal.edtMaxSenhaExit(Sender: TObject);
@@ -403,6 +576,371 @@ begin
   begin
     AtualizarTamanhos(TamanhoMaximoSenha);
     AtualizarLabelTamanho(TamanhoMaximoSenha);
+  end;
+  AtualizarEstadoGerar;
+end;
+
+procedure TPrincipal.RegistrarHistorico(const ASenha: string);
+var
+  Stamp: string;
+begin
+  if not cbRegistrarHistorico.Checked then
+    Exit;
+  Stamp := FormatDateTime('yyyy-mm-dd hh:nn:ss', Now);
+  memSenhaGerada.Lines.Add(Format('%s - %s', [Stamp, ASenha]));
+end;
+
+procedure TPrincipal.CopiarSenha(const ASenha: string; const AExibirMensagem: Boolean);
+begin
+  if not cbCopiarAuto.Checked then
+  begin
+    if AExibirMensagem then
+      ShowMessage('A senha foi gerada com sucesso!');
+    Exit;
+  end;
+
+  Clipboard.AsText := ASenha;
+  FClipboardSnapshot := ASenha;
+  tmrClipboard.Enabled := True;
+  if AExibirMensagem then
+    ShowMessage('A senha foi copiada para a área de transferência!');
+end;
+
+procedure TPrincipal.AtualizarEstadoGerar;
+var
+  OpcoesSelecionadas: Boolean;
+begin
+  if cbHashQuest.Checked then
+  begin
+    btnGerar.Enabled := (Trim(edtSenha.Text) <> '') and (Trim(edtSemente.Text) <> '');
+    if btnGerar.Enabled then
+      AtualizarAviso('')
+    else
+      AtualizarAviso('Preencha Senha e Semente para gerar a hash.');
+    Exit;
+  end;
+
+  OpcoesSelecionadas := cbMaius.Checked or cbMinus.Checked or cbNums.Checked or cbEspecis.Checked;
+  btnGerar.Enabled := OpcoesSelecionadas;
+  if not OpcoesSelecionadas then
+  begin
+    AtualizarDestaqueTipos(True);
+    AtualizarAviso('Selecione ao menos um tipo de caractere para gerar a senha.');
+  end
+  else
+  begin
+    AtualizarDestaqueTipos(False);
+    AtualizarAviso('');
+  end;
+end;
+
+procedure TPrincipal.AtualizarForcaSenha(const ASenha: string);
+var
+  Pontuacao: Integer;
+  Diversidade: Integer;
+  TemMaius: Boolean;
+  TemMinus: Boolean;
+  TemNums: Boolean;
+  TemEspeciais: Boolean;
+  Ch: Char;
+  Recomenda: string;
+begin
+  if ASenha = '' then
+  begin
+    pbForca.Position := 0;
+    lblForca.Caption := 'Força: n/a';
+    lblForcaDetalhe.Caption := 'A força não se aplica para hashes.';
+    Exit;
+  end;
+
+  TemMaius := False;
+  TemMinus := False;
+  TemNums := False;
+  TemEspeciais := False;
+
+  for Ch in ASenha do
+  begin
+    if CharInSet(Ch, ['A'..'Z']) then
+      TemMaius := True
+    else if CharInSet(Ch, ['a'..'z']) then
+      TemMinus := True
+    else if CharInSet(Ch, ['0'..'9']) then
+      TemNums := True
+    else
+      TemEspeciais := True;
+  end;
+
+  Pontuacao := Min(100, Length(ASenha) * 5);
+  Diversidade := 0;
+  if TemMaius then
+    Inc(Diversidade);
+  if TemMinus then
+    Inc(Diversidade);
+  if TemNums then
+    Inc(Diversidade);
+  if TemEspeciais then
+    Inc(Diversidade);
+  Pontuacao := Min(100, Pontuacao + (Diversidade * 10));
+  pbForca.Position := Pontuacao;
+
+  if Pontuacao < 40 then
+    lblForca.Caption := 'Força: fraca'
+  else if Pontuacao < 70 then
+    lblForca.Caption := 'Força: média'
+  else
+    lblForca.Caption := 'Força: forte';
+
+  Recomenda := '';
+  if Length(ASenha) < 12 then
+    Recomenda := 'Considere usar 12+ caracteres. ';
+  if not TemMaius then
+    Recomenda := Recomenda + 'Adicione maiúsculas. ';
+  if not TemMinus then
+    Recomenda := Recomenda + 'Adicione minúsculas. ';
+  if not TemNums then
+    Recomenda := Recomenda + 'Adicione números. ';
+  if not TemEspeciais then
+    Recomenda := Recomenda + 'Adicione especiais.';
+  lblForcaDetalhe.Caption := Trim(Recomenda);
+end;
+
+procedure TPrincipal.btnLimparHistoricoClick(Sender: TObject);
+begin
+  memSenhaGerada.Clear;
+end;
+
+procedure TPrincipal.btnExportarClick(Sender: TObject);
+begin
+  if memSenhaGerada.Lines.Count = 0 then
+  begin
+    ShowMessage('Não há histórico para exportar.');
+    Exit;
+  end;
+
+  if dlgSalvarHistorico.Execute then
+    ExportarHistorico(dlgSalvarHistorico.FileName);
+end;
+
+procedure TPrincipal.cbOpcoesClick(Sender: TObject);
+begin
+  AtualizarEstadoGerar;
+  AtualizarAmbiguosEstado;
+end;
+
+procedure TPrincipal.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SalvarPreferencias;
+end;
+
+procedure TPrincipal.tmrClipboardTimer(Sender: TObject);
+begin
+  tmrClipboard.Enabled := False;
+  if Clipboard.AsText = FClipboardSnapshot then
+    Clipboard.Clear;
+end;
+
+procedure TPrincipal.cbEvitarAmbiguosClick(Sender: TObject);
+begin
+  AtualizarAmbiguosEstado;
+  AtualizarEstadoGerar;
+end;
+
+procedure TPrincipal.cbMostrarSenhaClick(Sender: TObject);
+begin
+  if cbMostrarSenha.Checked then
+    edtSenha.PasswordChar := #0
+  else
+    edtSenha.PasswordChar := '*';
+end;
+
+procedure TPrincipal.btnCopiarHistoricoClick(Sender: TObject);
+var
+  Linha: string;
+begin
+  if memSenhaGerada.SelLength > 0 then
+    Linha := memSenhaGerada.SelText
+  else if memSenhaGerada.Lines.Count > 0 then
+    Linha := memSenhaGerada.Lines[memSenhaGerada.Lines.Count - 1]
+  else
+    Linha := '';
+
+  Linha := Trim(Linha);
+  if Linha = '' then
+  begin
+    ShowMessage('Não há histórico para copiar.');
+    Exit;
+  end;
+
+  Clipboard.AsText := ExtrairSenhaLinha(Linha);
+  ShowMessage('Senha copiada do histórico.');
+end;
+
+procedure TPrincipal.AtualizarAmbiguosEstado;
+begin
+  edtAmbiguos.Enabled := cbEvitarAmbiguos.Checked;
+  lblAmbiguos.Enabled := cbEvitarAmbiguos.Checked;
+end;
+
+procedure TPrincipal.AtualizarAvisoHash;
+begin
+  AdvLabel3.Caption := 'Gera uma hash da senha digitada com semente.' + sLineBreak +
+    'Selecione o algoritmo de hash desejado.';
+end;
+
+procedure TPrincipal.AtualizarAviso(const AMensagem: string);
+begin
+  lblAviso.Caption := AMensagem;
+  lblAviso.Visible := Trim(AMensagem) <> '';
+end;
+
+function TPrincipal.ExtrairSenhaLinha(const ALinha: string): string;
+var
+  Separador: Integer;
+begin
+  Separador := Pos(' - ', ALinha);
+  if Separador > 0 then
+    Result := Copy(ALinha, Separador + 3, MaxInt)
+  else
+    Result := ALinha;
+end;
+
+procedure TPrincipal.ExportarHistorico(const AArquivo: string);
+var
+  Extensao: string;
+  Linhas: TStringList;
+  i: Integer;
+  Linha: string;
+  Senha: string;
+  DataHora: string;
+  Separador: Integer;
+begin
+  Extensao := LowerCase(ExtractFileExt(AArquivo));
+  Linhas := TStringList.Create;
+  try
+    if Extensao = '.csv' then
+    begin
+      Linhas.Add('data_hora,senha');
+      for i := 0 to memSenhaGerada.Lines.Count - 1 do
+      begin
+        Linha := memSenhaGerada.Lines[i];
+        Separador := Pos(' - ', Linha);
+        if Separador > 0 then
+        begin
+          DataHora := Trim(Copy(Linha, 1, Separador - 1));
+          Senha := Copy(Linha, Separador + 3, MaxInt);
+        end
+        else
+        begin
+          DataHora := '';
+          Senha := Linha;
+        end;
+        Linhas.Add(Format('"%s","%s"', [StringReplace(DataHora, '"', '""', [rfReplaceAll]), StringReplace(Senha, '"', '""', [rfReplaceAll])]));
+      end;
+      Linhas.SaveToFile(AArquivo);
+      Exit;
+    end;
+
+    if Extensao = '.json' then
+    begin
+      Linhas.Add('[');
+      for i := 0 to memSenhaGerada.Lines.Count - 1 do
+      begin
+        Linha := memSenhaGerada.Lines[i];
+        Separador := Pos(' - ', Linha);
+        if Separador > 0 then
+        begin
+          DataHora := Trim(Copy(Linha, 1, Separador - 1));
+          Senha := Copy(Linha, Separador + 3, MaxInt);
+        end
+        else
+        begin
+          DataHora := '';
+          Senha := Linha;
+        end;
+        Linhas.Add(Format('  {"data_hora": "%s", "senha": "%s"}%s', [
+          StringReplace(DataHora, '"', '\"', [rfReplaceAll]),
+          StringReplace(Senha, '"', '\"', [rfReplaceAll]),
+          IfThen(i < memSenhaGerada.Lines.Count - 1, ',', '')
+        ]));
+      end;
+      Linhas.Add(']');
+      Linhas.SaveToFile(AArquivo);
+      Exit;
+    end;
+
+    memSenhaGerada.Lines.SaveToFile(AArquivo);
+  finally
+    Linhas.Free;
+  end;
+end;
+
+function TPrincipal.ObterNomeArquivoConfig: string;
+begin
+  Result := IncludeTrailingPathDelimiter(GetEnvironmentVariable('APPDATA')) + 'GeradorDeSenhas.ini';
+end;
+
+procedure TPrincipal.CarregarPreferencias;
+var
+  Ini: TIniFile;
+  Maximo: Integer;
+  TamanhoSelecionado: Integer;
+begin
+  Ini := TIniFile.Create(ObterNomeArquivoConfig);
+  try
+    cbMaius.Checked := Ini.ReadBool('Opcoes', 'Maiusculas', cbMaius.Checked);
+    cbMinus.Checked := Ini.ReadBool('Opcoes', 'Minusculas', cbMinus.Checked);
+    cbNums.Checked := Ini.ReadBool('Opcoes', 'Numeros', cbNums.Checked);
+    cbEspecis.Checked := Ini.ReadBool('Opcoes', 'Especiais', cbEspecis.Checked);
+    cbEvitarAmbiguos.Checked := Ini.ReadBool('Opcoes', 'EvitarAmbiguos', cbEvitarAmbiguos.Checked);
+    cbCopiarAuto.Checked := Ini.ReadBool('Opcoes', 'CopiarAuto', cbCopiarAuto.Checked);
+    cbRegistrarHistorico.Checked := Ini.ReadBool('Opcoes', 'RegistrarHistorico', cbRegistrarHistorico.Checked);
+    cbReqMaius.Checked := Ini.ReadBool('Opcoes', 'ReqMaiusculas', cbReqMaius.Checked);
+    cbReqMinus.Checked := Ini.ReadBool('Opcoes', 'ReqMinusculas', cbReqMinus.Checked);
+    cbReqNums.Checked := Ini.ReadBool('Opcoes', 'ReqNumeros', cbReqNums.Checked);
+    cbReqEspecis.Checked := Ini.ReadBool('Opcoes', 'ReqEspeciais', cbReqEspecis.Checked);
+    edtAmbiguos.Text := Ini.ReadString('Opcoes', 'Ambiguos', edtAmbiguos.Text);
+    Maximo := Ini.ReadInteger('Opcoes', 'Maximo', 30);
+    edtMaxSenha.Text := IntToStr(Maximo);
+    AtualizarTamanhos(Maximo);
+    AtualizarLabelTamanho(Maximo);
+    cbHashAlg.ItemIndex := Ini.ReadInteger('Opcoes', 'HashAlg', cbHashAlg.ItemIndex);
+    if cbHashAlg.ItemIndex < 0 then
+      cbHashAlg.ItemIndex := 0;
+    TamanhoSelecionado := Ini.ReadInteger('Opcoes', 'Tamanho', cbTamanhoSenha.ItemIndex + 1);
+    if (TamanhoSelecionado > 0) and (TamanhoSelecionado <= cbTamanhoSenha.Items.Count) then
+      cbTamanhoSenha.ItemIndex := TamanhoSelecionado - 1;
+    edtQuantidade.Text := Ini.ReadString('Opcoes', 'Quantidade', edtQuantidade.Text);
+    edtMinimo.Text := Ini.ReadString('Opcoes', 'Minimo', edtMinimo.Text);
+  finally
+    Ini.Free;
+  end;
+end;
+
+procedure TPrincipal.SalvarPreferencias;
+var
+  Ini: TIniFile;
+begin
+  Ini := TIniFile.Create(ObterNomeArquivoConfig);
+  try
+    Ini.WriteBool('Opcoes', 'Maiusculas', cbMaius.Checked);
+    Ini.WriteBool('Opcoes', 'Minusculas', cbMinus.Checked);
+    Ini.WriteBool('Opcoes', 'Numeros', cbNums.Checked);
+    Ini.WriteBool('Opcoes', 'Especiais', cbEspecis.Checked);
+    Ini.WriteBool('Opcoes', 'EvitarAmbiguos', cbEvitarAmbiguos.Checked);
+    Ini.WriteBool('Opcoes', 'CopiarAuto', cbCopiarAuto.Checked);
+    Ini.WriteBool('Opcoes', 'RegistrarHistorico', cbRegistrarHistorico.Checked);
+    Ini.WriteBool('Opcoes', 'ReqMaiusculas', cbReqMaius.Checked);
+    Ini.WriteBool('Opcoes', 'ReqMinusculas', cbReqMinus.Checked);
+    Ini.WriteBool('Opcoes', 'ReqNumeros', cbReqNums.Checked);
+    Ini.WriteBool('Opcoes', 'ReqEspeciais', cbReqEspecis.Checked);
+    Ini.WriteString('Opcoes', 'Ambiguos', edtAmbiguos.Text);
+    Ini.WriteInteger('Opcoes', 'Maximo', StrToIntDef(edtMaxSenha.Text, 30));
+    Ini.WriteInteger('Opcoes', 'HashAlg', cbHashAlg.ItemIndex);
+    Ini.WriteInteger('Opcoes', 'Tamanho', cbTamanhoSenha.ItemIndex + 1);
+    Ini.WriteString('Opcoes', 'Quantidade', edtQuantidade.Text);
+    Ini.WriteString('Opcoes', 'Minimo', edtMinimo.Text);
+  finally
+    Ini.Free;
   end;
 end;
 
